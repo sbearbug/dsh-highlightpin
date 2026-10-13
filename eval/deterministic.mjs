@@ -18,11 +18,11 @@ const original = facts.map((text, i) => ({ id: `m_${i}`, role: 'assistant', cont
 assert.equal(decide(pins, original).length, 0)
 const summaryOnly = [{ id: 'summary', role: 'user', content: [{ type: 'text', text: '这里是故意不包含任何事实的受控摘要。' }], source: { kind: 'compaction' } }]
 const missing = decide(pins, summaryOnly)
-const notice = renderNotice(missing), strict = renderNotice(pins, { strict: true })
+const notice = renderNotice(missing)
 const resident = renderSections(pins.map(p => ({ ...p, level: 'resident' })))
 const highlight = renderSections(pins.map(p => ({ ...p, level: 'highlight' })))
 const retained = text => pins.filter(pin => Buffer.from(text).includes(Buffer.from(pin.text))).length
-assert.equal(retained(notice), 6); assert.equal(retained(strict), 6)
+assert.equal(retained(notice), 6)
 assert.equal(retained(resident), 6); assert.equal(retained(highlight), 6)
 const injected = { id: 'notice', role: 'user', content: [{ type: 'text', text: notice }], source: { kind: 'highlightpin', form: 'notice', pinIds: pins.map(p => p.id) } }
 assert.equal(decide(pins, [...summaryOnly, injected]).length, 0)
@@ -32,7 +32,6 @@ const results = {
   kind: 'controlled-input-preservation-fixture', llmUsed: false, liveDshUsed: false,
   pinnedFacts: pins.length, originalPresentExtraPins: 0,
   notice: { byteIdenticalFactsPresent: retained(notice), injectionChars: notice.length, injectionUtf8Bytes: Buffer.byteLength(notice) },
-  strict: { byteIdenticalFactsPresent: retained(strict), injectionChars: strict.length, injectionUtf8Bytes: Buffer.byteLength(strict) },
   pin: { byteIdenticalFactsPresent: retained(notice) },
   resident: { byteIdenticalFactsPresent: retained(resident), systemChars: resident.length },
   highlight: { byteIdenticalFactsPresent: retained(highlight), systemChars: highlight.length },

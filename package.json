@@ -1,6 +1,6 @@
 {
   "name": "dsh-highlightpin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Three-level source-text pins: recall, resident background, and highlighted constraints for DeepSeek Harness.",
   "type": "module",
   "license": "MIT",
@@ -13,19 +13,21 @@
     "src",
     "lib",
     "scripts",
-    "docs",
+    "docs/PROBES.md",
+    "docs/m1-live-0.1.4.json",
     "cordis.patch.yml",
     "README.md",
     "README.zh.md",
     "DESIGN.md",
     "EVAL.md",
+    "CHANGELOG.md",
     "LICENSE",
     "eval",
     "test"
   ],
   "engines": {
     "node": ">=22.19.0",
-    "dsh": ">=0.2.0-rc.2"
+    "dsh": ">=0.1.7-rc.1"
   },
   "dsh": {
     "bundle": {
@@ -46,16 +48,33 @@
     "eval": "node eval/deterministic.mjs"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-commands": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
-    "@deepseek-ai/dsh-storage-domain": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-commands": ">=0.1.7-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-llm": ">=0.1.7-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-storage-domain": ">=0.1.7-rc.1 <0.3.0-0",
     "@deepseek-ai/schemastery": "~3.18.4"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-commands": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-llm": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-storage-domain": {
+      "optional": true
+    },
+    "@deepseek-ai/schemastery": {
+      "optional": true
+    }
   },
   "dependencies": {
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@deepseek-ai/dsh-commands": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
     "@deepseek-ai/dsh-session": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-storage-domain": "0.2.0-rc.2",
     "esbuild": "^0.25.0",
     "jsdom": "^26.0.0",
     "react": "^18.3.1",

@@ -3,25 +3,26 @@ import assert from 'node:assert/strict'
 import { createStore, textHash } from '../src/store.js'
 import { createPlugin } from '../src/index.js'
 import { decide } from '../src/decide.js'
-import { renderNotice, renderSections, NOTICE_HEADER, LEGACY_NOTICE_HEADER, RESIDENT_HEADER, HIGHLIGHT_HEADER } from '../src/notice.js'
+import { renderNotice, renderSections, NOTICE_HEADER, RESIDENT_HEADER, HIGHLIGHT_HEADER } from '../src/notice.js'
 import { Config, validateConfig } from '../src/config.js'
 import { memoryStorage, pinInput, fakeContext, message } from './helpers.mjs'
 
 function make(backend, config = {}) { let id = 0; return createStore({ storageDomain: backend.facility, config, makeId: () => `p_${++id}`, now: () => 1 }) }
-test('version-1 old records, legacy strict mapping, explicit levels and rewrite survive reopen', async () => {
+test('version-1 records with a removed mode field read as pin, lose mode, and survive reopen', async () => {
   const b = memoryStorage()
   b.records.sessions = { s: { mode: 'strict', pins: [{ ...pinInput(), id: 'p_old', createdAt: 1, textHash: textHash('原文事实') }] } }
   const store = make(b); await store.open()
-  assert.equal(store.list('s')[0].level, 'resident')
+  assert.equal(store.list('s')[0].level, 'pin')
   await store.setLevel('s', 'p_old', 'highlight')
   assert.equal(b.records.sessions.s.pins[0].level, 'highlight')
+  assert.equal('mode' in b.records.sessions.s, false)
   await store.close()
   const next = make(b); await next.open()
   assert.equal(next.list('s')[0].level, 'highlight')
   await next.setLevel('s', 'p_old', 'pin'); assert.equal(next.list('s')[0].level, 'pin')
   await next.close()
 })
-test('legacy notice records default to pin and preserve optional level across schema rewrite', async () => {
+test('records without a level read as pin and keep an assigned level across reopen', async () => {
   const b = memoryStorage()
   b.records.sessions = { s: { pins: [{ ...pinInput(), id: 'p_old', createdAt: 1, textHash: textHash('原文事实') }] } }
   const store = make(b); await store.open()
@@ -35,14 +36,6 @@ test('legacy notice records default to pin and preserve optional level across sc
   assert.equal(reopened.list('s').find(p => p.messageId === 'new').level, 'pin')
   assert.equal(reopened.list('s').find(p => p.id === 'p_old').text, '原文事实')
   await reopened.close()
-})
-test('profile strict floors all pins to resident but preserves highlight', async () => {
-  const b = memoryStorage(), store = make(b, { mode: 'strict', maxPinChars: 1, maxResidentChars: 4, maxHighlightChars: 4 }); await store.open()
-  const p = await store.add(pinInput()); assert.equal(store.list('s')[0].level, 'resident')
-  await assert.rejects(store.add(pinInput({ messageId: 'second' })), e => e.code === 'resident-budget-exceeded')
-  await store.setLevel('s', p.pin.id, 'highlight'); assert.equal(store.list('s')[0].level, 'highlight')
-  await store.setLevel('s', p.pin.id, 'pin'); assert.equal(store.list('s')[0].level, 'resident')
-  await store.close()
 })
 for (const [config, firstLevel, secondLevel, code] of [
   [{ maxResidentChars: 4 }, 'resident', 'resident', 'resident-budget-exceeded'],
@@ -111,11 +104,9 @@ test('resident/highlight sections have separate ordered headings, omit empty sec
   assert.ok(text.startsWith(RESIDENT_HEADER)); assert.ok(text.includes(HIGHLIGHT_HEADER))
   assert.ok(!text.includes('p_p')); assert.equal(text, renderSections([r, h, p]))
   assert.ok(!renderSections([r]).includes(HIGHLIGHT_HEADER)); assert.equal(renderSections([p]), '')
-  for (const title of [NOTICE_HEADER, LEGACY_NOTICE_HEADER]) {
-    const notice = message('n', renderNotice([p]).replace(NOTICE_HEADER, title), 'user')
-    notice.source = { kind: 'highlightpin', form: 'notice', pinIds: [p.id] }
-    assert.equal(decide([p], [notice]).length, 0)
-  }
+  const notice = message('n', renderNotice([p]), 'user')
+  notice.source = { kind: 'highlightpin', form: 'notice', pinIds: [p.id] }
+  assert.equal(decide([p], [notice]).length, 0)
 })
 test('excludeIds is pure and the absence of a snapshot does not lose resident/highlight pins', () => {
   const pins = ['pin', 'resident', 'highlight'].map((level, i) => ({ ...pinInput(), id: `p_${i}`, level, createdAt: i, textHash: textHash('原文事实') }))
@@ -129,7 +120,7 @@ test('both request paths exclude only the actual section snapshot, including sam
   const section = []
   let appended = []
   const agent = { session: { id: 's', header: {}, deriveMessages: () => [], append: (_type, m) => appended.push(m) }, ctx: { inject: (_names, fn) => { fn({ systemPrompt: { section: s => section.push(s) } }); return { dispose: async () => {} } } } }
-  plugin.installStrict(agent)
+  plugin.installResidentSections(agent)
   const pins = []
   for (const [i, level] of ['pin', 'resident', 'highlight'].entries()) {
     const p = await plugin.store.add(pinInput({ messageId: `m${i}` })); await plugin.store.setLevel('s', p.pin.id, level); pins.push(p.pin)

@@ -1,10 +1,10 @@
 # 平台核实与真机探针
 
-记录日期：2026-10-13（Asia/Shanghai）。基准源码：DeepSeek Harness 0.2.0-rc.2。路径以研究工作区 `dsh-all/dsh/node_modules/@deepseek-ai/` 为根。
+记录日期：2026-10-13（Asia/Shanghai）。基准源码：DeepSeek Harness 0.2.0-rc.2。下文引用官方源码时，路径的根是从该版本 `app.asar` 解包出的 `dsh/node_modules/@deepseek-ai/`。
 
 ## 0.1.x 初始离线调查（历史记录）
 
-- 读取已解包官方源码与 CODEX 交接材料；未修改这些参考目录。
+- 读取已解包的官方源码；未修改这些参考目录。
 - 导入真实官方 Session、DomainFacility、createUserMessage、Config 与命令品牌类型。
 - 用真实 Session.append 的合法 replacement/provenance 操作验证遮蔽、source/id 保留、日志恢复和重复补注。
 - 用真实 DomainFacility 的写链与内存后端验证并发、提交顺序、失败回滚及 close/open。
@@ -20,7 +20,7 @@
 | 如何拿源消息 id | 标准 `useChat(s => s.nodes)`，`:5137`；user 的节点 id 是 source message id，`:9270` 起的 messageDefinition；assistant 的 finalNode.messageId，`:7550` |
 | 如何区分已定稿 | assistant `data.finalNode` 指向已提交助手消息，`:7543` 起；renderer streaming 检查 data.status === running，`:6008` |
 | 如何防止跨会话捕获 | `data-conversation-session`，`dsh-client-ui-conversation/lib/client.js:16333` |
-| dock 合约 | `CODEX/02-API参考/slots-catalog.js:3004–3059`：list/session、ownerProps session/input、standardProps useChat/sessionId |
+| dock 合约 | `dsh-cordis-client-runner/lib/client.js:3004–3059`：list/session、ownerProps session/input、standardProps useChat/sessionId |
 | KaTeX 与 UI chrome | `dsh-client-ui-primitives/lib/index.js:11007` 调用 KaTeX；`:10894` 代码工具栏属性，`:10911` 代码内容；`:11814` MarkdownText |
 | pre-step.messages | `dsh-agent-loop/lib/index.js:905–919`：inbox claim，不是完整历史。下游 decision.messages 是本步最终待追加消息 |
 | 模型历史与 source | `dsh-session/lib/index.js:214–225` deriveEventMessage 返回原数据；`:1554` deriveMessages。官方 Session 离线测试证实 id/source 保留 |
@@ -31,7 +31,7 @@
 | 同一步溢出重试 | `dsh-compaction-basic/lib/index.js:861–889` request-error 压缩并返回 retry；`dsh-agent-loop/lib/index.js:1124–1134` continue 不重新调用 preStep |
 | 重试后追加的合法事件 | `dsh-session/lib/index.js:1441` append，user/message 是已知类型。正常 agent loop 自己也于 `:1061` 追加同类型 |
 | 系统提示词严格保留 | `dsh-system-prompt/lib/index.js:240` section、`:342` 函数求值；`:114` interpolate=false 原样保留 |
-| section order | `CODEX/02-API参考/system-prompt.js:10–40`，9500 位于官方 9000 与 9900 之间 |
+| section order | `dsh-system-prompt/lib/index.js:10–40`，9500 位于官方 9000 与 9900 之间 |
 | 系统节点更新 | `dsh-agent-loop/lib/index.js:263–286`：普通路径头节点替换，in-history 能力下可能追加节点 |
 | 写入并发语义 | `dsh-storage-domain/lib/index.js:215` 每域写链、`:257` put、`:278` update；跨进程安全不能由此推出 |
 | domain name | `dsh-storage-domain/lib/index.js:61` defineDomain；使用无连字符的 highlightpin |
@@ -41,7 +41,7 @@
 | 现有 agent 与清理 | `dsh-agent/lib/index.js:579` agent/created、`:550` agent/disposed、`:612` agents.list |
 | HTTP 路由 | `dsh-host-webserver/lib/index.js:177` register、`:235` handler(req,res) |
 
-`CODEX/02-API参考/web-server.README.md` 实为 dsh-web 搜索/抓取文档，不能用它证明 webServer.register。信任围栏是本地函数，不是官方 API。
+参考材料里曾有一份 `web-server.README.md`，实为 dsh-web 的搜索/抓取文档，不能用它证明 `webServer.register`；该证据见上表。信任围栏是本地函数，不是官方 API。
 
 ## 初始真机清单（历史记录，最新 M1 结论见末尾）
 
@@ -109,3 +109,10 @@
 新增与升级仅检查目标有效类型，错误码为 pin-budget-exceeded / resident-budget-exceeded / highlight-budget-exceeded。沿用降级总允许的约定；降级或旧数据造成类型超额时保留原文，拒绝继续向该类型新增或升级，其他类型不受影响。profile strict 按有效 resident 级别计量。移除的 maxPins/maxHighlightPins/maxTotalChars 配置被忽略；旧 maxPinChars 数值改为 pin 合计预算，兼容说明已写入 README。
 
 npm run check 78/78、客户端 loader/dock 检查通过；npm run eval 三档各 6/6。回归覆盖超过 20 枚总钉子、超过 5 枚 highlight、单枚超过旧 4000 字符、每类独立满额、目标类型拒绝与原文不变、并发升级、旧超额类型不阻塞其他类型、profile strict 有效预算、HTTP 返回独立用量与 UI 三类预算。尚未在安装后的 DSH 真机复验本次预算变更。
+
+## 当前状态
+
+- 【真机】M1 已通过：隔离会话完成 last → /compact → 下一条消息，请求前 surface 含逐字一致的被遮蔽原文补注（证据 m1-live-0.1.4.json，见上文 M1 一节）。
+- 【真机】highlight 常驻系统提示词通道已在本机 DSH 上确认收到注入。
+- 【真机·未完成】三档级别的完整真机联调未执行：notice 按需补回通道、明暗主题下的 dock 与详情面板均未在真机上验证。
+- 【离线】npm run check 与 npm run eval 全绿；真实模型召回率、主动提及率、dsh-bite 对照与提供方缓存测量未执行。

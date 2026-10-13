@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { score } from '../eval/score.mjs'
 test('L2 scorer keeps missing telemetry null, counts exact bytes, and rejects duplicated samples', () => {
   const facts = [{ id: 'p', expected: 'cafe\u0301', pinned: true }, { id: 'u', expected: '3.70', pinned: false }]
-  const runs = [{ condition: 'notice', seed: '1', factId: 'p', answer: 'café' }, { condition: 'notice', seed: '1', factId: 'u', answer: 'value: 3.70', usage: { prompt_cache_hit_tokens: 80, prompt_cache_miss_tokens: 20 }, injectedTokens: 10 }]
+  const runs = [{ condition: 'pin', seed: '1', factId: 'p', answer: 'café' }, { condition: 'pin', seed: '1', factId: 'u', answer: 'value: 3.70', usage: { prompt_cache_hit_tokens: 80, prompt_cache_miss_tokens: 20 }, injectedTokens: 10 }]
   const result = score({ facts, runs })[0]
   assert.equal(result.pinnedRecall, 0); assert.equal(result.unpinnedRecall, 1)
   assert.equal(result.cacheHitRatio, 0.8); assert.equal(result.meanInjectedTokens, 10)

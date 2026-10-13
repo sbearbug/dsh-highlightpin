@@ -20,7 +20,7 @@ test('real React dock clears cancelled selections, protects only pin activation 
     let response
     if (url.endsWith('/level')) { pins[0].level = body.level; response = { ok: true, pin: { ...pins[0] } } }
     else if (url.endsWith('/pin')) { const pin = { id: 'p_1', role: 'user', text: body.text, fidelity: 'source-exact', level: 'pin' }; pins.push(pin); response = { ok: true, pin } }
-    else response = { ok: true, pins: pins.map(p => ({ ...p })), capabilities: { pinLevels: true }, usage: { count: pins.length, chars: 4, estimatedTokens: 2, pinChars: 4, residentChars: 0, highlightPins: 0, highlightChars: 0, limits: { maxPinChars: 16000, maxResidentChars: 6000, maxHighlightChars: 2000, mode: 'notice' } } }
+    else response = { ok: true, pins: pins.map(p => ({ ...p })), usage: { count: pins.length, chars: 4, estimatedTokens: 2, pinChars: 4, residentChars: 0, highlightPins: 0, highlightChars: 0, limits: { maxPinChars: 16000, maxResidentChars: 6000, maxHighlightChars: 2000 } } }
     return { ok: true, json: async () => response }
   } })
   const mod = loaded.factory(name => name === 'react' ? React : jsxRuntime)
@@ -117,7 +117,7 @@ test('late load failure cannot reopen dismissed details; arrow, close and Escape
   globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true
   let loaded, component, rejectInitial, requests = 0
   const initial = new Promise((_resolve, reject) => { rejectInitial = reject })
-  const response = { ok: true, pins: [], mode: 'notice', usage: { count: 0, chars: 0, estimatedTokens: 0, limits: { maxPinChars: 16000, maxResidentChars: 6000, maxHighlightChars: 2000 } } }
+  const response = { ok: true, pins: [], usage: { count: 0, chars: 0, estimatedTokens: 0, limits: { maxPinChars: 16000, maxResidentChars: 6000, maxHighlightChars: 2000 } } }
   dom.window.__ModuleLoader__ = { load: value => { loaded = value } }
   vm.runInNewContext(await readFile(new URL('../lib/client.js', import.meta.url), 'utf8'), {
     window: dom.window, document: dom.window.document,
@@ -160,7 +160,7 @@ test('an older same-session refresh cannot overwrite the newest pin level', asyn
   globalThis.window = dom.window; globalThis.document = dom.window.document; globalThis.IS_REACT_ACT_ENVIRONMENT = true
   let loaded, component, requests = 0
   const resolvers = []
-  const response = level => ({ ok: true, json: async () => ({ ok: true, capabilities: { pinLevels: true }, pins: [{ id: 'p_1', level, text: '原文', role: 'user', fidelity: 'source-exact' }], usage: { count: 1, chars: 2, limits: { maxPinChars: 16000, maxResidentChars: 6000, maxHighlightChars: 2000 } } }) })
+  const response = level => ({ ok: true, json: async () => ({ ok: true, pins: [{ id: 'p_1', level, text: '原文', role: 'user', fidelity: 'source-exact' }], usage: { count: 1, chars: 2, limits: { maxPinChars: 16000, maxResidentChars: 6000, maxHighlightChars: 2000 } } }) })
   dom.window.__ModuleLoader__ = { load: value => { loaded = value } }
   vm.runInNewContext(await readFile(new URL('../lib/client.js', import.meta.url), 'utf8'), {
     window: dom.window, document: dom.window.document,

@@ -9,11 +9,6 @@
     "injectionChars": 533,
     "injectionUtf8Bytes": 716
   },
-  "strict": {
-    "byteIdenticalFactsPresent": 6,
-    "injectionChars": 527,
-    "injectionUtf8Bytes": 698
-  },
   "pin": {
     "byteIdenticalFactsPresent": 6
   },

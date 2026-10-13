@@ -13,7 +13,8 @@ const pinSchema = z.object({
   fidelity: z.enum(['source-exact', 'source-normalized', 'rendered']), createdAt: z.number().finite(),
   level: z.enum(['pin', 'resident', 'highlight']).optional(),
 })
-export const domainSpec = defineDomain({ name: 'highlightpin', version: 1, tables: { sessions: domainTable(z.object({ pins: z.array(pinSchema), mode: z.enum(['notice', 'strict']).optional() })) } })
+// A record from before 0.1.1 may still carry a `mode` field; the schema drops it on read.
+export const domainSpec = defineDomain({ name: 'highlightpin', version: 1, tables: { sessions: domainTable(z.object({ pins: z.array(pinSchema) })) } })
 export class PinError extends Error {
   constructor(code, message, status = 400) { super(message); this.code = code; this.status = status }
 }
@@ -23,7 +24,7 @@ export function createStore({ storageDomain, config = {}, now = Date.now, makeId
   let domain, opening, closed = false, chain = Promise.resolve()
   function requireReady() { if (!domain || closed) throw new PinError('not-ready', '钉子存储尚未就绪。', 503); return domain.table('sessions') }
   function enqueue(fn) { const task = chain.then(fn); chain = task.catch(() => {}); return task }
-  const resolvePins = record => (record?.pins ?? []).map(pin => ({ ...pin, level: effectiveLevel(pin, record.mode, limits.mode) })).sort(comparePins)
+  const resolvePins = record => (record?.pins ?? []).map(pin => ({ ...pin, level: effectiveLevel(pin) })).sort(comparePins)
   const list = sessionId => resolvePins(requireReady().get(sessionId))
   function checkLevelBudget(pins, levels) {
     const usage = levelUsage(pins)
@@ -50,32 +51,18 @@ export function createStore({ storageDomain, config = {}, now = Date.now, makeId
       })()
     },
     list,
-    mode(sessionId) { return requireReady().get(sessionId)?.mode ?? limits.mode },
     setLevel(sessionId, pinId, level) {
       if (!LEVELS.includes(level)) return Promise.reject(new PinError('bad-level', '级别必须是 pin、resident 或 highlight。'))
       return enqueue(async () => {
         const table = requireReady(), record = table.get(sessionId)
         const pin = record?.pins.find(p => p.id === pinId)
         if (!pin) throw new PinError('pin-not-found', '钉子不存在。', 404)
-        const old = pin.level ?? (record.mode === 'strict' ? 'resident' : 'pin')
+        const old = pin.level ?? 'pin'
         const next = { ...record, pins: record.pins.map(p => p.id === pinId ? { ...p, level } : p) }
-        // Always allow demotions and no-op changes, even if legacy/config data is over budget.
-        if (LEVELS.indexOf(level) > LEVELS.indexOf(old)) checkLevelBudget(resolvePins(next), [effectiveLevel({ level }, record.mode, limits.mode)])
+        // Always allow demotions and no-op changes, even if legacy data is over budget.
+        if (LEVELS.indexOf(level) > LEVELS.indexOf(old)) checkLevelBudget(resolvePins(next), [effectiveLevel({ level })])
         await table.update(sessionId, () => next)
         return { ok: true, pin: list(sessionId).find(p => p.id === pinId), usage: this.usage(sessionId) }
-      })
-    },
-    setMode(sessionId, mode) {
-      if (!['notice', 'strict'].includes(mode)) return Promise.reject(new PinError('bad-mode', '模式必须是 notice 或 strict。'))
-      return enqueue(async () => {
-        const table = requireReady()
-        // Legacy endpoint: normalize all pins when an old client changes the session mode.
-        const record = table.get(sessionId) ?? { pins: [] }
-        const next = { ...record, mode, pins: record.pins.map(pin => ({ ...pin, level: mode === 'strict' ? (pin.level === 'highlight' ? 'highlight' : 'resident') : 'pin' })) }
-        if (mode === 'strict') checkLevelBudget(resolvePins(next), ['resident'])
-        if (table.get(sessionId) === undefined) await table.put(sessionId, next)
-        else await table.update(sessionId, () => next)
-        return { ok: true, mode }
       })
     },
     usage(sessionId) { const pins = list(sessionId), chars = pins.reduce((n, p) => n + p.text.length, 0); return { count: pins.length, chars, estimatedTokens: Math.ceil(chars / 2), ...levelUsage(pins), limits } },
@@ -86,7 +73,7 @@ export function createStore({ storageDomain, config = {}, now = Date.now, makeId
         const pins = list(pin.sessionId)
         const duplicate = pins.find(p => p.messageId === pin.messageId && p.partIndex === pin.partIndex && p.start === pin.start && p.end === pin.end && (pin.fidelity !== 'rendered' || p.text === pin.text))
         if (duplicate) return { ok: true, already: true, pin: duplicate }
-        const level = effectiveLevel(pin, table.get(pin.sessionId)?.mode, limits.mode)
+        const level = effectiveLevel(pin)
         checkLevelBudget([...pins, { ...pin, level }], [level])
         if (table.get(pin.sessionId) === undefined) await table.put(pin.sessionId, { pins: [] })
         await table.update(pin.sessionId, record => ({ ...record, pins: [...record.pins, pin] }))

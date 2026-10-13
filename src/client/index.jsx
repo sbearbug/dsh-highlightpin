@@ -33,7 +33,6 @@ const CSS = `
 async function request(path, body) {
   const response = await fetch(API + path, body === undefined ? { headers } : { method: 'POST', headers, body: JSON.stringify(body) })
   const result = await response.json()
-  if (path === '/level' && response.status === 404) throw new Error('宿主仍在运行旧版插件，尚无钉子级别接口。请完全退出并重新启动 DSH，再刷新页面；钉子不会丢失。')
   if (!response.ok || !result.ok) throw new Error(result.message ?? result.code ?? `HTTP ${response.status}`)
   return result
 }
@@ -53,7 +52,6 @@ export function PinDock({ session, sessionId: explicitId, useChat }) {
   const [selection, setSelection] = useState(null)
   const [pins, setPins] = useState([])
   const [usage, setUsage] = useState(null)
-  const [backendWarning, setBackendWarning] = useState('')
   const [status, setStatus] = useState(null)
   const [hint, setHint] = useState('')
   const [busy, setBusy] = useState(false)
@@ -83,14 +81,13 @@ export function PinDock({ session, sessionId: explicitId, useChat }) {
       const result = await request(`/pins?session=${encodeURIComponent(sessionId)}`)
       if (currentSession.current !== sessionId || id !== refreshId.current) return
       setPins(result.pins); setUsage(result.usage); setStatus(result.status)
-      setBackendWarning(result.capabilities?.pinLevels ? '' : '当前宿主可能仍运行旧版插件，未提供三档级别接口。请完全退出并重新启动 DSH，再刷新页面。')
     } catch (error) {
       if (currentSession.current === sessionId && id === refreshId.current) throw error
     }
   }, [sessionId])
 
   useEffect(() => {
-    setExpanded(false); setSelection(null); setPins([]); setUsage(null); setBackendWarning(''); setStatus(null); setHint('')
+    setExpanded(false); setSelection(null); setPins([]); setUsage(null); setStatus(null); setHint('')
     refresh().catch(error => { if (currentSession.current === sessionId) setHint(error.message) })
     return () => { refreshId.current++ }
   }, [sessionId, refresh])
@@ -138,7 +135,7 @@ export function PinDock({ session, sessionId: explicitId, useChat }) {
       const result = await request(path, body)
       if (currentSession.current !== sessionId) return
       if (path === '/level') {
-        setHint(`已设置为 ${result.pin.level}。${result.pin.level !== 'pin' ? '会进入系统提示词，切换时前缀缓存会失效一次。' : ''}${usage?.limits.mode === 'strict' ? '当前 profile strict 配置要求钉子至少常驻。' : ''}`)
+        setHint(`已设置为 ${result.pin.level}。${result.pin.level !== 'pin' ? '会进入系统提示词，切换时前缀缓存会失效一次。' : ''}`)
       } else {
         setHint(result.warning ?? (result.already ? '这段已经钉过了。' : path === '/pin' ? `已钉住 ${result.pin.text.length} 字符。` : '已解钉。'))
         if (path === '/pin') setSelection(null)
@@ -164,7 +161,6 @@ export function PinDock({ session, sessionId: explicitId, useChat }) {
     </div>
     {expanded && <section className="hlpin-panel" id={panelId} aria-label="钉子详情">
       <div className="hlpin-panel-head"><span className="hlpin-panel-title">当前会话的钉子</span><div className="hlpin-panel-actions"><button className="hlpin-icon" type="button" disabled={busy} onClick={() => refresh().catch(error => setHint(error.message))} aria-label="刷新钉子" title="刷新钉子"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><path d="M16 7a6 6 0 1 0 .1 6M16 3v4h-4" /></svg></button><button className="hlpin-icon" type="button" onClick={() => setExpanded(false)} aria-label="关闭钉子详情" title="关闭"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8" /></svg></button></div></div>
-      {backendWarning && <div className="hlpin-hint" role="alert">{backendWarning}</div>}
       <div className="hlpin-muted">pin 按需补回 · resident 中性常驻 · highlight 重点常驻。每枚钉子独立选择。</div>
       <div className="hlpin-muted">{usage ? `${usage.count} 枚 · pin ${usage.pinChars ?? 0}/${usage.limits.maxPinChars ?? 16000} 字符 · resident ${usage.residentChars ?? 0}/${usage.limits.maxResidentChars ?? 6000} 字符 · highlight ${usage.highlightChars ?? 0}/${usage.limits.maxHighlightChars ?? 2000} 字符` : '加载钉子…'}{status?.compacted ? ` · 上次压缩后已补注 ${status.recalled} 枚` : ''}</div>
       {pins.length ? <div className="hlpin-list">{pins.map((pin, i) => <div className="hlpin-item" key={pin.id}>

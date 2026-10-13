@@ -70,18 +70,22 @@ test('open/dispose race releases the official domain handle', async () => {
   assert.equal(store.ready, false); assert.equal(backend.control.closes, 1)
 })
 
-test('per-session modes survive reopen, preserve pins and do not affect other sessions', async () => {
-  const backend = memoryStorage(), store = make(backend); await store.open()
-  await store.add(pinInput()); assert.equal(store.mode('s'), 'notice')
-  await store.setMode('s', 'strict'); assert.equal(store.mode('s'), 'strict'); assert.equal(store.mode('other'), 'notice')
-  await store.add(pinInput({ messageId: 'second' })); await store.remove('s', 'p_1')
-  assert.equal(store.mode('s'), 'strict'); assert.equal(store.list('s').length, 1)
+test('a record carrying a removed mode field still opens, drops mode and keeps explicit levels', async () => {
+  const backend = memoryStorage()
+  backend.records.sessions = {
+    s: {
+      mode: 'strict',
+      pins: [
+        { ...pinInput(), id: 'p_old', createdAt: 1, textHash: '0123456789abcdef' },
+        { ...pinInput({ messageId: 'm2' }), id: 'p_hi', createdAt: 2, textHash: 'fedcba9876543210', level: 'highlight' },
+      ],
+    },
+  }
+  const store = make(backend); await store.open()
+  // The schema strips `mode` on read: a pin without a level reads as pin, an explicit one is kept.
+  assert.deepEqual(store.list('s').map(p => p.level), ['pin', 'highlight'])
+  await store.add(pinInput({ messageId: 'm3' }))
+  assert.equal('mode' in backend.records.sessions.s, false)
+  assert.equal(backend.records.sessions.s.pins.find(p => p.id === 'p_hi').level, 'highlight')
   await store.close()
-  const reopened = make(backend); await reopened.open()
-  assert.equal(reopened.mode('s'), 'strict'); assert.equal(reopened.list('s').length, 1)
-  backend.control.fail = true
-  await assert.rejects(reopened.setMode('s', 'notice'), /disk-full/)
-  assert.equal(reopened.mode('s'), 'strict')
-  await assert.rejects(reopened.setMode('s', 'other'), e => e.code === 'bad-mode')
-  backend.control.fail = false; await reopened.close()
 })

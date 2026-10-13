@@ -75,7 +75,7 @@ export function createPlugin(ctx, inputConfig = {}, deps = {}) {
     return action
   }
 
-  function installStrict(agent) {
+  function installResidentSections(agent) {
     if (promptFibers.has(agent) || isSubagentSession(agent.session, config)) return
     const fiber = agent.ctx.inject(['systemPrompt'], scope => {
       scope.systemPrompt.section({
@@ -90,7 +90,7 @@ export function createPlugin(ctx, inputConfig = {}, deps = {}) {
     })
     promptFibers.set(agent, fiber)
   }
-  async function disposeStrict(agent) {
+  async function disposeResidentSections(agent) {
     const fiber = promptFibers.get(agent)
     promptFibers.delete(agent)
     assembledSections.delete(agent)
@@ -123,7 +123,7 @@ export function createPlugin(ctx, inputConfig = {}, deps = {}) {
         const pin = pins[Number(args[1]) - 1]
         if (!pin) throw new PinError('bad-index', `序号越界；当前共有 ${pins.length} 枚。`)
         const result = await store.setLevel(session.id, pin.id, args[2])
-        text = `已设置为 ${result.pin.level}。${result.pin.level !== 'pin' ? '会进入系统提示词，切换时前缀缓存会失效一次。' : ''}${config.mode === 'strict' ? 'profile strict 配置要求钉子至少常驻。' : ''}`
+        text = `已设置为 ${result.pin.level}。${result.pin.level !== 'pin' ? '会进入系统提示词，切换时前缀缓存会失效一次。' : ''}`
       } else if (['show', 'drop'].includes(action) && args.length === 2 && /^[1-9]\d*$/.test(args[1])) {
         const pin = pins[Number(args[1]) - 1]
         if (!pin) throw new PinError('bad-index', `序号越界；当前共有 ${pins.length} 枚。`)
@@ -139,10 +139,10 @@ export function createPlugin(ctx, inputConfig = {}, deps = {}) {
     // Outer listener computes after downstream pressure compaction.
     ctx.on('agent/pre-step', preStep, { prepend: true })
     ctx.on('agent/request-error', requestError, { prepend: true })
-    ctx.on('agent/created', ({ agent }) => installStrict(agent))
-    ctx.on('agent/disposed', ({ agent }) => { status.delete(agent.session.id); return disposeStrict(agent) })
-    ctx.effect(() => async () => { for (const agent of [...promptFibers.keys()]) await disposeStrict(agent) })
-    ctx.inject(['agents'], scope => { for (const agent of scope.agents.list()) installStrict(agent) })
+    ctx.on('agent/created', ({ agent }) => installResidentSections(agent))
+    ctx.on('agent/disposed', ({ agent }) => { status.delete(agent.session.id); return disposeResidentSections(agent) })
+    ctx.effect(() => async () => { for (const agent of [...promptFibers.keys()]) await disposeResidentSections(agent) })
+    ctx.inject(['agents'], scope => { for (const agent of scope.agents.list()) installResidentSections(agent) })
     ctx.on('session/event', (session, event) => {
       if (event.type === 'compaction/end' && !event.data.error) status.set(session.id, { compacted: true, recalled: 0 })
       if (event.type === 'user/message' && event.data.source?.kind === NAME) {
@@ -154,7 +154,7 @@ export function createPlugin(ctx, inputConfig = {}, deps = {}) {
     ctx.inject(['sessions'], scope => { services.sessions = scope.sessions })
     ctx.inject(['sessionPersistence'], scope => { services.sessionPersistence = scope.sessionPersistence })
     ctx.inject(['webServer', 'webRuntime'], scope => {
-      const routes = makeRoutes({ store, pinSelection, trustedHosts: scope.webRuntime.trustedHosts, logger: ctx.logger, mode: config.mode, statusOf: id => status.get(id) ?? null })
+      const routes = makeRoutes({ store, pinSelection, trustedHosts: scope.webRuntime.trustedHosts, logger: ctx.logger, statusOf: id => status.get(id) ?? null })
       scope.effect(() => scope.webServer.register({ kind: 'prefix', path: ROUTE_PREFIX, handler: async (req, res) => {
         // UI status is derived only from committed events, never from a proposed decision.
         await routes(req, res)
@@ -162,7 +162,7 @@ export function createPlugin(ctx, inputConfig = {}, deps = {}) {
     })
     return ready
   }
-  return { start, store, config, preStep, requestError, pinSelection, command, installStrict, disposeStrict, status }
+  return { start, store, config, preStep, requestError, pinSelection, command, installResidentSections, disposeResidentSections, status }
 }
 
 export function apply(ctx, config) { const plugin = createPlugin(ctx, config); plugin.start(); return plugin }

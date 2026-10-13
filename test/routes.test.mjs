@@ -88,18 +88,6 @@ test('rendered downgrade is explicit in HTTP response and is never truncated', a
   await h.close()
 })
 
-test('mode route validates and persists a current-session choice behind the same fence', async () => {
-  const h = await fixture()
-  const result = await call(h.route, { path: '/mode', body: JSON.stringify({ sessionId: 's', mode: 'strict' }) })
-  assert.equal(result.status, 200); assert.equal(result.body.mode, 'strict')
-  assert.equal((await call(h.route, { path: '/pins?session=s', method: 'GET' })).body.mode, 'strict')
-  assert.equal((await call(h.route, { path: '/pins?session=other', method: 'GET' })).body.mode, 'notice')
-  const invalid = await call(h.route, { path: '/mode', body: JSON.stringify({ sessionId: 's', mode: 'other' }) })
-  assert.equal(invalid.status, 400); assert.equal(h.plugin.store.mode('s'), 'strict')
-  assert.equal((await call(h.route, { path: '/mode', headers: { 'sec-fetch-site': 'cross-site' } })).status, 403)
-  await h.close()
-})
-
 test('per-pin level route exposes usage, validates input and retains its JSON/fence protections', async () => {
   const h = await fixture()
   const added = await call(h.route, { body: JSON.stringify({ sessionId: 's', messageId: 'm', text: 'a b c' }) })

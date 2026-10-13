@@ -33,7 +33,7 @@ export function requiredString(value, name) {
   return value
 }
 
-export function makeRoutes({ store, pinSelection, trustedHosts = [], logger, mode, statusOf = () => null }) {
+export function makeRoutes({ store, pinSelection, trustedHosts = [], logger, statusOf = () => null }) {
   const send = (res, status, body) => {
     res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
     res.end(JSON.stringify(body))
@@ -44,18 +44,14 @@ export function makeRoutes({ store, pinSelection, trustedHosts = [], logger, mod
       if (String(req.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase() !== 'application/json') throw new PinError('unsupported-media-type', '需要 application/json。', 415)
       if (!store.ready) throw new PinError('not-ready', '钉子存储尚未就绪。', 503)
       const url = new URL(req.url, 'http://localhost')
-      if (url.pathname === `${ROUTE_PREFIX}/health` && req.method === 'GET') return send(res, 200, { ok: true, name: 'dsh-highlightpin', version: packageInfo.version, mode, ready: true })
+      if (url.pathname === `${ROUTE_PREFIX}/health` && req.method === 'GET') return send(res, 200, { ok: true, name: 'dsh-highlightpin', version: packageInfo.version, ready: true })
       if (url.pathname === `${ROUTE_PREFIX}/pins` && req.method === 'GET') {
         const sessionId = requiredString(url.searchParams.get('session'), 'session')
-        return send(res, 200, { ok: true, pins: store.list(sessionId), usage: store.usage(sessionId), mode: store.mode(sessionId), version: packageInfo.version, capabilities: { pinLevels: true }, status: statusOf(sessionId) })
+        return send(res, 200, { ok: true, pins: store.list(sessionId), usage: store.usage(sessionId), version: packageInfo.version, status: statusOf(sessionId) })
       }
       if (url.pathname === `${ROUTE_PREFIX}/level` && req.method === 'POST') {
         const body = await readJson(req)
         return send(res, 200, await store.setLevel(requiredString(body.sessionId, 'sessionId'), requiredString(body.pinId, 'pinId'), body.level))
-      }
-      if (url.pathname === `${ROUTE_PREFIX}/mode` && req.method === 'POST') {
-        const body = await readJson(req)
-        return send(res, 200, await store.setMode(requiredString(body.sessionId, 'sessionId'), body.mode))
       }
       if (url.pathname === `${ROUTE_PREFIX}/pin` && req.method === 'POST') {
         const body = await readJson(req)

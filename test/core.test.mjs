@@ -85,7 +85,9 @@ test('numeric configuration rejects zero, negative, fractional, NaN and infinite
     assert.throws(() => validateConfig({ [key]: value }))
     assert.throws(() => Config({ [key]: value }))
   }
-  assert.equal(validateConfig().mode, 'notice')
+  // The session-level mode is gone; a leftover value in an old profile is ignored, not rejected.
+  assert.deepEqual(Object.keys(validateConfig()).sort(), ['holdSubagents', 'maxHighlightChars', 'maxPinChars', 'maxResidentChars'])
+  assert.equal('mode' in validateConfig({ mode: 'strict' }), false)
 })
 test('latest replacement event supplies the source, injected user messages are excluded', () => {
   const old = { type: 'assistant/message', data: { message: message('m', 'old') } }, updated = { type: 'assistant/message', data: { message: message('m', 'new') } }

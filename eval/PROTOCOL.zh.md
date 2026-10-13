@@ -46,7 +46,7 @@
 }
 ```
 
-condition 取 none/pin/resident/highlight，bite 可选；旧 notice/strict 数据仅为兼容可读，不作为本次新实验组。仅在确有数据时加上 usage 和 injectedTokens。重复 condition/seed/factId/probeType 会报错。expected 原文出现在 raw answer 中即命中；附带解释不会让正确原文失分，但每个事实只允许一种固定原文。无钉事实使用完全相同评分方式。
+condition 取 none/pin/resident/highlight，bite 可选。仅在确有数据时加上 usage 和 injectedTokens。重复 condition/seed/factId/probeType 会报错。expected 原文出现在 raw answer 中即命中；附带解释不会让正确原文失分，但每个事实只允许一种固定原文。无钉事实使用完全相同评分方式。
 
 unprompted 样本示意（必须替换为真实记录）：
 

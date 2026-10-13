@@ -92,16 +92,16 @@ test('subagents are excluded unless explicitly enabled', async () => {
   }
 })
 
-test('strict uses literal system sections only, follows edits, and disposes fibers', async () => {
-  const h = await harness({ mode: 'strict' }), sections = []; let disposed = 0
+test('resident sections stay literal, follow edits, and dispose fibers', async () => {
+  const h = await harness(), sections = []; let disposed = 0
   const agent = { session: { id: 's', header: {}, deriveMessages: () => [] }, ctx: { inject: (_services, callback) => { callback({ systemPrompt: { section: s => sections.push(s) } }); return { dispose: async () => { disposed++ } } } } }
-  h.plugin.installStrict(agent); h.plugin.installStrict(agent)
+  h.plugin.installResidentSections(agent); h.plugin.installResidentSections(agent)
   assert.equal(sections.length, 1); assert.equal(sections[0].interpolate, false); assert.equal(sections[0].text(), '')
-  const added = await h.plugin.store.add(pinInput({ text: '{{literal}}', end: 11 }))
+  const added = await h.plugin.store.add(pinInput({ text: '{{literal}}', end: 11, level: 'resident' }))
   assert.ok(sections[0].text().includes('{{literal}}'))
   assert.equal((await h.plugin.preStep({ agent }, async () => ({ kind: 'enter', messages: [] }))).messages.length, 0)
   await h.plugin.store.remove('s', added.pin.id); assert.equal(sections[0].text(), '')
-  await h.plugin.disposeStrict(agent); assert.equal(disposed, 1)
+  await h.plugin.disposeResidentSections(agent); assert.equal(disposed, 1)
   await h.close()
 })
 
@@ -143,20 +143,5 @@ test('compaction status is display-only and counts committed notices only', asyn
   observe({ id: 's' }, { type: 'compaction/end', data: {} })
   observe({ id: 's' }, { type: 'user/message', data: { source: { kind: 'highlightpin', form: 'notice', pinIds: ['p_one', 'p_two'] } } })
   assert.equal(h.plugin.status.get('s').recalled, 2)
-  await h.close()
-})
-
-test('mode changes update existing agent sections and keep an admitted step on its assembled mode', async () => {
-  const h = await harness(), sections = []
-  const agent = { session: { id: 's', header: {}, deriveMessages: () => [] }, ctx: { inject: (_names, cb) => { cb({ systemPrompt: { section: value => sections.push(value) } }); return { dispose: async () => {} } } } }
-  h.plugin.installStrict(agent); await h.plugin.store.add(pinInput())
-  assert.equal(sections[0].text(), '')
-  // UI switches while downstream compaction is pending; this step's assembly was notice.
-  const current = await h.plugin.preStep({ agent }, async () => { await h.plugin.store.setMode('s', 'strict'); return { kind: 'enter', messages: [] } })
-  assert.equal(current.messages.length, 1)
-  assert.ok(sections[0].text().includes('原文事实'))
-  assert.equal((await h.plugin.preStep({ agent }, async () => ({ kind: 'enter', messages: [] }))).messages.length, 0)
-  await h.plugin.store.setMode('s', 'notice'); assert.equal(sections[0].text(), '')
-  assert.equal((await h.plugin.preStep({ agent }, async () => ({ kind: 'enter', messages: [] }))).messages.length, 1)
   await h.close()
 })

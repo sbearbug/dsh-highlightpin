@@ -9,7 +9,7 @@ export function score(data) {
   for (const run of data.runs) {
     const fact = facts.get(run.factId)
     if (!fact || typeof fact.expected !== 'string' || !fact.expected || typeof fact.pinned !== 'boolean') throw new TypeError('invalid fact')
-    if (!['none', 'bite', 'pin', 'resident', 'highlight', 'notice', 'strict'].includes(run.condition) || typeof run.answer !== 'string' || typeof run.seed !== 'string') throw new TypeError('invalid run')
+    if (!['none', 'bite', 'pin', 'resident', 'highlight'].includes(run.condition) || typeof run.answer !== 'string' || typeof run.seed !== 'string') throw new TypeError('invalid run')
     const probeType = run.probeType ?? 'recall'
     if (!['recall', 'unprompted'].includes(probeType)) throw new TypeError('invalid probeType')
     if (probeType === 'unprompted' && run.promptMentionsFact !== false) throw new TypeError('unprompted probes require promptMentionsFact=false')
