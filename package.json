@@ -4,6 +4,29 @@
   "description": "Three-level source-text pins: recall, resident background, and highlighted constraints for DeepSeek Harness.",
   "type": "module",
   "license": "MIT",
+  "author": "sbearbug",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sbearbug/dsh-highlightpin.git"
+  },
+  "homepage": "https://github.com/sbearbug/dsh-highlightpin#readme",
+  "bugs": {
+    "url": "https://github.com/sbearbug/dsh-highlightpin/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "deepseek-harness",
+    "deepseek",
+    "cordis",
+    "pin",
+    "context-compaction",
+    "system-prompt"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": "./src/index.js",
     "./client": "./lib/client.js",
@@ -45,7 +68,8 @@
     "build": "node scripts/build.mjs",
     "test": "npm run build && node --test test/*.test.mjs",
     "check": "npm test && node test/bundle.mjs",
-    "eval": "node eval/deterministic.mjs"
+    "eval": "node eval/deterministic.mjs",
+    "prepublishOnly": "npm run check"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-commands": ">=0.1.7-rc.1 <0.3.0-0",

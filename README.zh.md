@@ -23,6 +23,14 @@ resident 和 highlight 被刻意设计成两档。"让模型随时找得到"和"
 
 ## 安装
 
+从 npm 安装（正式发布版）：
+
+```sh
+dsh plugin --profile desktop add dsh-highlightpin@0.1.1
+```
+
+也可以直接从 GitHub 源码安装：
+
 ```sh
 dsh plugin --profile desktop add 'https://codeload.github.com/sbearbug/dsh-highlightpin/tar.gz/v0.1.1'
 ```

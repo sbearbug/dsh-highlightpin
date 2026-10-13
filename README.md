@@ -23,6 +23,14 @@ Each pin carries its own level:
 
 ## Installation
 
+From npm (published releases):
+
+```sh
+dsh plugin --profile desktop add dsh-highlightpin@0.1.1
+```
+
+Or straight from the GitHub source:
+
 ```sh
 dsh plugin --profile desktop add 'https://codeload.github.com/sbearbug/dsh-highlightpin/tar.gz/v0.1.1'
 ```
