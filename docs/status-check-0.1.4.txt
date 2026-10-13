@@ -1,0 +1,84 @@
+
+> dsh-highlightpin@0.1.4 check
+> npm test && node test/bundle.mjs
+
+
+> dsh-highlightpin@0.1.4 test
+> npm run build && node --test test/*.test.mjs
+
+
+> dsh-highlightpin@0.1.4 build
+> node scripts/build.mjs
+
+Built lib/client.js (24396 bytes)
+✔ align plain (1.153209ms)
+✔ align bold (12.860291ms)
+✔ align italic (0.241333ms)
+✔ align inline code (0.116958ms)
+✔ align link (0.091167ms)
+✔ align inline TeX (0.036125ms)
+✔ align display TeX (0.595583ms)
+✔ align code fragment (0.045833ms)
+✔ align list (0.231042ms)
+✔ align Chinese (0.753834ms)
+✔ align balanced marker boundary (0.140458ms)
+✔ align NBSP (0.058916ms)
+✔ align NFC (0.050833ms)
+✔ repeated text uses adjacent context, otherwise explicitly degrades (0.71775ms)
+✔ multiple parts preserve the original part index (0.070625ms)
+✔ fallback text remains complete including leading/trailing whitespace (0.27025ms)
+✔ projection preserves literal underscores inside code and TeX (0.159ms)
+✔ decide is pure, stable, and restores notices after subsequent compaction (0.870208ms)
+✔ id retention without byte-identical text does not suppress recall (0.245458ms)
+✔ foreign/user source cannot forge a notice by copying its markers (0.062708ms)
+✔ notice rendering is deterministic with delimiter collision handling (0.062666ms)
+✔ numeric configuration rejects zero, negative, fractional, NaN and infinite values (1.281125ms)
+✔ latest replacement event supplies the source, injected user messages are excluded (0.077083ms)
+✔ L2 scorer keeps missing telemetry null, counts exact bytes, and rejects duplicated samples (1.217417ms)
+✔ real Session surface: no duplicate while original/notice present; reinject after repeated replacement (8.149542ms)
+✔ pre-step observes compaction completed by downstream listeners, not the inbox-only payload (1.023042ms)
+✔ provider overflow retry repairs the real Session before the same-step request is rebuilt (1.032083ms)
+✔ downstream notice contributions suppress duplicates; a failed side effect does not consume recall (0.47725ms)
+✔ subagents are excluded unless explicitly enabled (0.720083ms)
+✔ strict uses literal system sections only, follows edits, and disposes fibers (0.51925ms)
+✔ headless command lifecycle and last/show/drop/list preserve complete source (0.556ms)
+✔ selection looks up the latest source from persistence and closes read handles (9.541833ms)
+✔ compaction status is display-only and counts committed notices only (0.203459ms)
+✔ mode changes update existing agent sections and keep an admitted step on its assembled mode (0.477833ms)
+✔ material follows the current session composer rather than a fixed theme (43.979667ms)
+✔ trust fence rejects missing/invalid Host, cross-site, foreign origin and wrong origin port (0.906958ms)
+✔ routes preserve source text, list fidelity/budgets and delete pins (14.616625ms)
+✔ HTTP errors have explicit status and common error shape (1.287416ms)
+✔ oversized requests are bounded in bytes and respond 413 instead of destroying the response socket (0.520792ms)
+✔ not-ready returns 503 and write failure cannot falsely report success (0.834291ms)
+✔ rendered downgrade is explicit in HTTP response and is never truncated (1.158041ms)
+✔ mode route validates and persists a current-session choice behind the same fence (0.638292ms)
+✔ block boundaries, br, code bytes and UI removal (27.118083ms)
+✔ KaTeX inline extracts annotation and snaps partial formula boundaries (8.108917ms)
+✔ KaTeX display extracts annotation and snaps partial formula boundaries (2.749792ms)
+✔ partial code selections preserve whitespace and do not expand to the entire block (2.150959ms)
+✔ element offsets use ranges for context rather than treating offsets as character indices (1.991ms)
+✔ cross-message, streaming, tool and reasoning selections are explicitly rejected (2.0905ms)
+✔ user identity comes from the projected Chat node, not a guessed DOM attribute (2.078916ms)
+✔ serialized selection survives detached virtual/paged DOM nodes (1.993458ms)
+✔ identical Chat node keys in another session cannot capture the wrong source message (1.81275ms)
+✔ official domain durability, close/reopen and per-session isolation (4.686459ms)
+✔ writes do not appear before durability and backend failures do not commit pins (3.73175ms)
+✔ concurrent first writes and duplicate requests cannot overwrite each other (0.5995ms)
+✔ budget too-many-pins rejects without evicting or truncating (0.214375ms)
+✔ budget pin-too-long rejects without evicting or truncating (0.142333ms)
+✔ budget budget-exceeded rejects without evicting or truncating (0.130333ms)
+✔ rendered fallback dedupe includes text; equal offsets in distinct parts remain distinct (0.216334ms)
+✔ open/dispose race releases the official domain handle (0.069709ms)
+✔ per-session modes survive reopen, preserve pins and do not affect other sessions (0.278583ms)
+✔ real React dock collapses to two icon buttons, switches mode and uses cached selections (50.403042ms)
+✔ late load failure cannot reopen dismissed details; arrow, close and Escape remove the panel (10.627458ms)
+ℹ tests 62
+ℹ suites 0
+ℹ pass 62
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 318.050084
+Client loader factory and dock registration verified.

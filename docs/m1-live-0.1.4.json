@@ -1,0 +1,45 @@
+{
+  "verifiedOn": "2026-10-13 Asia/Shanghai",
+  "classification": "真机验证",
+  "installedPluginVersion": "0.1.4",
+  "sessionId": "session-543de7d2-15a3-4070-8e3a-3f958b9f5b53",
+  "failedShortHistoryCompactionEndSeq": 26,
+  "successfulCompactionEndSeq": 44,
+  "shadowedRange": {
+    "start": 9,
+    "end": 32
+  },
+  "noticeSeq": 52,
+  "requestHeaderSeq": 53,
+  "completedAssistantMessageSeq": 55,
+  "noticeSource": {
+    "kind": "highlightpin",
+    "form": "notice",
+    "pinIds": [
+      "p_1004cc2f548043b4986a27275a2ce843"
+    ]
+  },
+  "checks": [
+    {
+      "pinId": "p_1004cc2f548043b4986a27275a2ce843",
+      "originalMessageSeq": 18,
+      "messageId": "d613a063-22de-4bd3-b8d9-4e5085f6bedc",
+      "utf8Bytes": 53,
+      "sha256": "51c690fc4d35ba3ec37ae11b3ec26588a09bb40bfec56c4ec7c2f3cd713bc5a9",
+      "originalAbsentBeforeRecall": true,
+      "noticeContainsPin": true,
+      "noticeOriginalBytesEqual": true
+    },
+    {
+      "pinId": "p_03bd97c530e644deb8cfe08f1ed8d05e",
+      "originalMessageSeq": 34,
+      "messageId": "3b90865f-baf0-43f7-9fa6-b919dbb12cc3",
+      "utf8Bytes": 53,
+      "sha256": "51c690fc4d35ba3ec37ae11b3ec26588a09bb40bfec56c4ec7c2f3cd713bc5a9",
+      "originalAbsentBeforeRecall": false,
+      "noticeContainsPin": false,
+      "noticeOriginalBytesEqual": null
+    }
+  ],
+  "caveat": "Two pins contain the same fixture text; the latest assistant remains in the retained tail. The older pinned origin is shadowed and its complete block is verifiably recalled; no model-recall performance is claimed."
+}

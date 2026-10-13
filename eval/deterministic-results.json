@@ -1,0 +1,31 @@
+{
+  "kind": "controlled-input-preservation-fixture",
+  "llmUsed": false,
+  "liveDshUsed": false,
+  "pinnedFacts": 6,
+  "originalPresentExtraPins": 0,
+  "notice": {
+    "byteIdenticalFactsPresent": 6,
+    "injectionChars": 533,
+    "injectionUtf8Bytes": 716
+  },
+  "strict": {
+    "byteIdenticalFactsPresent": 6,
+    "injectionChars": 527,
+    "injectionUtf8Bytes": 698
+  },
+  "pin": {
+    "byteIdenticalFactsPresent": 6
+  },
+  "resident": {
+    "byteIdenticalFactsPresent": 6,
+    "systemChars": 527
+  },
+  "highlight": {
+    "byteIdenticalFactsPresent": 6,
+    "systemChars": 553
+  },
+  "noticePresentExtraPins": 0,
+  "noticeShadowedRecalledPins": 6,
+  "caveat": "This is deterministic input preservation, not measured LLM recall, real compaction, token usage or cache performance."
+}

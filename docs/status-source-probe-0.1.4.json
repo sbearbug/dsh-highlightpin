@@ -1,0 +1,15 @@
+{
+  "kind": "offline-official-Session-probe",
+  "liveDsh": false,
+  "idPreserved": true,
+  "sourcePreserved": {
+    "kind": "highlightpin",
+    "form": "notice",
+    "pinIds": [
+      "p_probe"
+    ],
+    "custom": {
+      "flag": true
+    }
+  }
+}

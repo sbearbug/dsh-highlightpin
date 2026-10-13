@@ -1,0 +1,24 @@
+
+> dsh-highlightpin@0.1.4 eval
+> node eval/deterministic.mjs
+
+{
+  "kind": "controlled-input-preservation-fixture",
+  "llmUsed": false,
+  "liveDshUsed": false,
+  "pinnedFacts": 6,
+  "originalPresentExtraPins": 0,
+  "notice": {
+    "byteIdenticalFactsPresent": 6,
+    "injectionChars": 534,
+    "injectionUtf8Bytes": 719
+  },
+  "strict": {
+    "byteIdenticalFactsPresent": 6,
+    "injectionChars": 526,
+    "injectionUtf8Bytes": 695
+  },
+  "noticePresentExtraPins": 0,
+  "noticeShadowedRecalledPins": 6,
+  "caveat": "This is deterministic input preservation, not measured LLM recall, real compaction, token usage or cache performance."
+}

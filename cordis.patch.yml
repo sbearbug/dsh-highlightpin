@@ -1,0 +1,4 @@
+- insert:
+    - id: dsh-highlightpin
+      name: dsh-highlightpin
+      config: {}
