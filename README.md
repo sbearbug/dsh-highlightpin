@@ -26,20 +26,22 @@ Each pin carries its own level:
 From npm (published releases):
 
 ```sh
-dsh plugin --profile desktop add dsh-highlightpin@0.1.1
+dsh plugin --profile desktop add dsh-highlightpin@0.1.2
 ```
 
 Or straight from the GitHub source:
 
 ```sh
-dsh plugin --profile desktop add 'https://codeload.github.com/sbearbug/dsh-highlightpin/tar.gz/v0.1.1'
+dsh plugin --profile desktop add 'https://codeload.github.com/sbearbug/dsh-highlightpin/tar.gz/v0.1.2'
 ```
 
 On the web profile, replace `desktop` with `web`. After installing or upgrading, **fully quit and restart DSH**, then refresh the page, so that host and client both load the new version. Existing pins survive.
 
 ### Compatible DSH versions
 
-`peerDependencies` declares `>=0.1.7-rc.1 <0.3.0-0`. The DSH plugin manager checks these peers with `semver.satisfies(runtimeVersion, range, { includePrerelease: true })` and blocks installation and activation on a mismatch.
+`peerDependencies` declares `>=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0`. The DSH plugin manager checks these peers with `semver.satisfies(runtimeVersion, range, { includePrerelease: true })` and blocks installation and activation on a mismatch.
+
+The range carries an explicit prerelease branch on purpose: under ordinary semver semantics a single `>=0.1.7-rc.1 <0.3.0-0` does not match the `0.2.0-rc.*` builds, because node-semver admits a prerelease only when some comparator in the range shares its exact `major.minor.patch` tuple and itself carries a prerelease tag.
 
 | DSH version | Status |
 |---|---|

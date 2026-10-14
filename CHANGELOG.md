@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+**English** — Fixed the `peerDependencies` ranges for the official `@deepseek-ai/dsh-*` packages. They now carry an explicit prerelease branch, `>=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0`, instead of a single `>=0.1.7-rc.1 <0.3.0-0`. Under ordinary semver semantics a plain range does not match the `0.2.0-rc.*` builds, because node-semver admits a prerelease only when some comparator in the range shares its exact `major.minor.patch` tuple and itself carries a prerelease tag. The DSH compatibility gate was never affected — it evaluates with `includePrerelease: true` — and no plugin behaviour changed.
+
+**中文** — 修正官方 `@deepseek-ai/dsh-*` 的 `peerDependencies` 范围：由 `>=0.1.7-rc.1 <0.3.0-0` 改为带显式预发布分支的 `>=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0`。在普通 semver 语义下，原先的范围匹配不到 `0.2.0-rc.*`——node-semver 只有在范围里存在同 `major.minor.patch` 元组、且自身带预发布标签的比较符时才会放行预发布版本。DSH 的兼容门禁不受影响（它以 `includePrerelease: true` 求值），插件行为没有任何变化。
+
 ## 0.1.1
 
 **English** — Removed the session-level mode and the `POST /highlightpin/api/mode` route: injection

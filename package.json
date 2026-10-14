@@ -1,6 +1,6 @@
 {
   "name": "dsh-highlightpin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Three-level source-text pins: recall, resident background, and highlighted constraints for DeepSeek Harness.",
   "type": "module",
   "license": "MIT",
@@ -72,9 +72,9 @@
     "prepublishOnly": "npm run check"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-commands": ">=0.1.7-rc.1 <0.3.0-0",
-    "@deepseek-ai/dsh-llm": ">=0.1.7-rc.1 <0.3.0-0",
-    "@deepseek-ai/dsh-storage-domain": ">=0.1.7-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-commands": ">=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-llm": ">=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0",
+    "@deepseek-ai/dsh-storage-domain": ">=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0",
     "@deepseek-ai/schemastery": "~3.18.4"
   },
   "peerDependenciesMeta": {

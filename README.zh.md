@@ -26,20 +26,22 @@ resident 和 highlight 被刻意设计成两档。"让模型随时找得到"和"
 从 npm 安装（正式发布版）：
 
 ```sh
-dsh plugin --profile desktop add dsh-highlightpin@0.1.1
+dsh plugin --profile desktop add dsh-highlightpin@0.1.2
 ```
 
 也可以直接从 GitHub 源码安装：
 
 ```sh
-dsh plugin --profile desktop add 'https://codeload.github.com/sbearbug/dsh-highlightpin/tar.gz/v0.1.1'
+dsh plugin --profile desktop add 'https://codeload.github.com/sbearbug/dsh-highlightpin/tar.gz/v0.1.2'
 ```
 
 Web 版请把 `desktop` 换成 `web`。安装或升级后，请**完全退出并重启 DSH**，再刷新页面，这样宿主和前端才会同时加载新版本。已有的钉子不会丢失。
 
 ### 适配的 DSH 版本
 
-`peerDependencies` 声明 `>=0.1.7-rc.1 <0.3.0-0`。DSH 的插件管理器按 `semver.satisfies(runtimeVersion, range, { includePrerelease: true })` 校验这些 peer，不匹配时会阻止安装与激活。
+`peerDependencies` 声明 `>=0.1.7-rc.1 <0.2.0-0 || >=0.2.0-rc.1 <0.3.0-0`。DSH 的插件管理器按 `semver.satisfies(runtimeVersion, range, { includePrerelease: true })` 校验这些 peer，不匹配时会阻止安装与激活。
+
+范围里之所以要写显式的预发布分支：在普通 semver 语义下，`>=0.1.7-rc.1 <0.3.0-0` 这种看似很宽的写法**匹配不到 `0.2.0-rc.*`**——node-semver 只有在范围里存在某个比较符与该版本 `major.minor.patch` 元组完全相同、且自身带预发布标签时，才会放行预发布版本。
 
 | DSH 版本 | 状态 |
 |---|---|
